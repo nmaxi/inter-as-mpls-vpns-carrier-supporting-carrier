@@ -1,0 +1,340 @@
+!
+! Last configuration change at 15:44:50 UTC Mon Dec 2 2019
+!
+version 16.12
+service timestamps debug datetime msec
+service timestamps log datetime msec
+! Call-home is enabled by Smart-Licensing.
+service call-home
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname SPC-RR66
+!
+boot-start-marker
+boot-end-marker
+!
+!
+!
+no aaa new-model
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+  no destination transport-method email
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+! 
+! 
+! 
+! 
+!
+!
+mpls label range 642600 642699
+multilink bundle-name authenticated
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint TP-self-signed-1400000072
+ enrollment selfsigned
+ subject-name cn=IOS-Self-Signed-Certificate-1400000072
+ revocation-check none
+ rsakeypair TP-self-signed-1400000072
+!
+crypto pki trustpoint SLA-TrustPoint
+ enrollment pkcs12
+ revocation-check crl
+!
+!
+diagnostic bootup level minimal
+memory free low-watermark processor 72406
+!
+!
+spanning-tree extend system-id
+!
+!
+redundancy
+!
+!
+!
+!
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+! 
+!
+!
+interface Loopback0
+ no shutdown
+ ip address 169.254.3.66 255.255.255.255
+!
+interface GigabitEthernet1
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet3
+ no shutdown
+ ip address 10.1.66.66 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet4
+ no shutdown
+ ip address 10.2.66.66 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet5
+ no shutdown
+ ip address 200.1.3.2 255.255.255.252
+ negotiation auto
+ mpls bgp forwarding
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet6
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet7
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet8
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet9
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet10
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet11
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet12
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+router ospf 64002
+ prefix-suppression
+ redistribute bgp 64002 metric-type 1 tag 64001
+ passive-interface default
+ no passive-interface GigabitEthernet3
+ no passive-interface GigabitEthernet4
+ network 10.1.66.0 0.0.0.255 area 0
+ network 10.2.66.0 0.0.0.255 area 0
+ network 169.254.3.0 0.0.0.255 area 0
+ mpls ldp autoconfig
+!
+router bgp 64002
+ bgp log-neighbor-changes
+ no bgp default ipv4-unicast
+ neighbor 169.254.2.55 remote-as 64001
+ neighbor 169.254.2.55 ebgp-multihop 255
+ neighbor 169.254.2.55 update-source Loopback0
+ neighbor 169.254.3.1 remote-as 64002
+ neighbor 169.254.3.1 update-source Loopback0
+ neighbor 169.254.3.2 remote-as 64002
+ neighbor 169.254.3.2 update-source Loopback0
+ neighbor 200.1.2.1 remote-as 20000
+ neighbor 200.1.3.1 remote-as 20000
+ !
+ address-family ipv4
+  network 169.254.2.55 mask 255.255.255.255
+  network 169.254.3.1 mask 255.255.255.255
+  network 169.254.3.2 mask 255.255.255.255
+  network 169.254.3.66 mask 255.255.255.255
+  neighbor 200.1.2.1 activate
+  neighbor 200.1.3.1 activate
+  neighbor 200.1.3.1 send-label
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 169.254.2.55 activate
+  neighbor 169.254.2.55 send-community extended
+  neighbor 169.254.2.55 next-hop-unchanged
+  neighbor 169.254.3.1 activate
+  neighbor 169.254.3.1 send-community extended
+  neighbor 169.254.3.1 route-reflector-client
+  neighbor 169.254.3.2 activate
+  neighbor 169.254.3.2 send-community extended
+  neighbor 169.254.3.2 route-reflector-client
+ exit-address-family
+ !
+ address-family l2vpn vpls
+  neighbor 169.254.2.55 activate
+  neighbor 169.254.2.55 send-community extended
+  neighbor 169.254.2.55 next-hop-unchanged
+  neighbor 169.254.3.1 activate
+  neighbor 169.254.3.1 send-community extended
+  neighbor 169.254.3.1 route-reflector-client
+  neighbor 169.254.3.2 activate
+  neighbor 169.254.3.2 send-community extended
+  neighbor 169.254.3.2 route-reflector-client
+ exit-address-family
+!
+!
+virtual-service csr_mgmt
+!
+ip forward-protocol nd
+ip http server
+ip http authentication local
+ip http secure-server
+!
+!
+!
+!
+!
+mpls ldp router-id Loopback0
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+ stopbits 1
+line vty 0
+ login
+line vty 1 2
+ login
+ length 0
+line vty 3 4
+ login
+!
+banner exec ^C
+***********************************************************************************
+* Inter-AS MPLS VPNs (VPLS, L3VPN), Carrier Supporting Carrier                    *
+* Copyright (C) 2019  Navid Yahyapour (NMAXi)                                     *
+* This configuration file is free: you can redistribute it and/or modify it.      *
+* This config file is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; Without even the implied warranty of MERCHANTABILITY or FITNESS   *
+* FOR A PARTICULAR PURPOSE. (The same as GNU General Public License!)             * 
+* My LinkedIn profile:  <https://www.linkedin.com/in/navid-yahyapour/>.           *
+***********************************************************************************^C
+banner incoming ^C
+***********************************************************************************
+* Inter-AS MPLS VPNs (VPLS, L3VPN), Carrier Supporting Carrier                    *
+* Copyright (C) 2019  Navid Yahyapour (NMAXi)                                     *
+* This configuration file is free: you can redistribute it and/or modify it.      *
+* This config file is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; Without even the implied warranty of MERCHANTABILITY or FITNESS   *
+* FOR A PARTICULAR PURPOSE. (The same as GNU General Public License!)             * 
+* My LinkedIn profile:  <https://www.linkedin.com/in/navid-yahyapour/>.           *
+***********************************************************************************^C
+banner login ^C
+***********************************************************************************
+* Inter-AS MPLS VPNs (VPLS, L3VPN), Carrier Supporting Carrier                    *
+* Copyright (C) 2019  Navid Yahyapour (NMAXi)                                     *
+* This configuration file is free: you can redistribute it and/or modify it.      *
+* This config file is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; Without even the implied warranty of MERCHANTABILITY or FITNESS   *
+* FOR A PARTICULAR PURPOSE. (The same as GNU General Public License!)             * 
+* My LinkedIn profile:  <https://www.linkedin.com/in/navid-yahyapour/>.           *
+***********************************************************************************^C
+!
+!
+!
+!
+!
+end

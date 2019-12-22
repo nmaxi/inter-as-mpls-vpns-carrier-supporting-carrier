@@ -1,0 +1,343 @@
+!
+! Last configuration change at 15:59:36 UTC Mon Dec 2 2019
+!
+version 16.12
+service timestamps debug datetime msec
+service timestamps log datetime msec
+! Call-home is enabled by Smart-Licensing.
+service call-home
+platform qfp utilization monitor load 80
+no platform punt-keepalive disable-kernel-core
+platform console serial
+!
+hostname SPB-PE1
+!
+boot-start-marker
+boot-end-marker
+!
+!
+vrf definition CustA
+ rd 64012:1
+ route-target export 169.254.2.1:1
+ route-target import 169.254.3.1:1
+ !
+ address-family ipv4
+ exit-address-family
+!
+!
+no aaa new-model
+call-home
+ ! If contact email address in call-home is configured as sch-smart-licensing@cisco.com
+ ! the email address configured in Cisco Smart License Portal will be used as contact email address to send SCH notifications.
+ contact-email-addr sch-smart-licensing@cisco.com
+ profile "CiscoTAC-1"
+  active
+  destination transport-method http
+  no destination transport-method email
+no ip icmp rate-limit unreachable
+!
+!
+!
+!
+!
+!
+!
+no ip domain lookup
+!
+!
+!
+login on-success log
+!
+!
+!
+!
+!
+!
+!
+subscriber templating
+! 
+! 
+! 
+! 
+!
+!
+mpls label range 641000 641999
+multilink bundle-name authenticated
+l2vpn vfi context CustB-VPLS 
+ vpn id 2
+ autodiscovery bgp signaling ldp 
+  vpls-id 64012:2
+  rd 64012:2
+  route-target export 169.254.2.1:2
+  route-target import 169.254.3.1:2
+  route-target import 169.254.3.2:2
+  route-target export 169.254.2.2:2
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+crypto pki trustpoint SLA-TrustPoint
+ enrollment pkcs12
+ revocation-check crl
+!
+!
+diagnostic bootup level minimal
+memory free low-watermark processor 72406
+!
+!
+spanning-tree extend system-id
+!
+!
+redundancy
+bridge-domain 2 
+ member GigabitEthernet2 service-instance 2
+ member vfi CustB-VPLS
+!
+!
+!
+!
+!
+!
+!
+! 
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+!
+! 
+! 
+!
+!
+interface Loopback0
+ no shutdown
+ ip address 169.254.2.1 255.255.255.255
+!
+interface GigabitEthernet1
+ no shutdown
+ vrf forwarding CustA
+ ip address 192.168.121.254 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet2
+ no shutdown
+ no ip address
+ negotiation auto
+ no mop enabled
+ no mop sysid
+ service instance 2 ethernet
+  encapsulation untagged
+  l2protocol forward cdp
+ !
+!
+interface GigabitEthernet3
+ no shutdown
+ ip address 10.1.55.1 255.255.255.0
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet4
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet5
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet6
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet7
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet8
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet9
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet10
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet11
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+interface GigabitEthernet12
+ no shutdown
+ no ip address
+ shutdown
+ negotiation auto
+ no mop enabled
+ no mop sysid
+!
+!
+router eigrp CustA
+ !
+ address-family ipv4 unicast vrf CustA autonomous-system 1
+  !
+  topology base
+   redistribute bgp 64001
+  exit-af-topology
+  network 192.168.121.0
+ exit-address-family
+!
+router ospf 64001
+ router-id 169.254.2.1
+ prefix-suppression
+ passive-interface default
+ no passive-interface GigabitEthernet3
+ network 10.1.55.0 0.0.0.255 area 0
+ network 169.254.2.0 0.0.0.255 area 0
+ mpls ldp autoconfig
+!
+router bgp 64001
+ bgp log-neighbor-changes
+ no bgp default ipv4-unicast
+ neighbor 169.254.2.55 remote-as 64001
+ !
+ address-family ipv4
+ exit-address-family
+ !
+ address-family vpnv4
+  neighbor 169.254.2.55 activate
+  neighbor 169.254.2.55 send-community extended
+ exit-address-family
+ !
+ address-family l2vpn vpls
+  neighbor 169.254.2.55 activate
+  neighbor 169.254.2.55 send-community extended
+ exit-address-family
+ !
+ address-family ipv4 vrf CustA
+  redistribute eigrp 1
+ exit-address-family
+!
+!
+virtual-service csr_mgmt
+!
+ip forward-protocol nd
+no ip http server
+no ip http secure-server
+!
+!
+!
+!
+!
+mpls ldp router-id Loopback0
+!
+!
+!
+control-plane
+!
+!
+!
+!
+!
+!
+line con 0
+ exec-timeout 0 0
+ logging synchronous
+ stopbits 1
+line vty 0
+ login
+line vty 1
+ login
+ length 0
+line vty 2 4
+ login
+!
+banner exec ^C
+***********************************************************************************
+* Inter-AS MPLS VPNs (VPLS, L3VPN), Carrier Supporting Carrier                    *
+* Copyright (C) 2019  Navid Yahyapour (NMAXi)                                     *
+* This configuration file is free: you can redistribute it and/or modify it.      *
+* This config file is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; Without even the implied warranty of MERCHANTABILITY or FITNESS   *
+* FOR A PARTICULAR PURPOSE. (The same as GNU General Public License!)             * 
+* My LinkedIn profile:  <https://www.linkedin.com/in/navid-yahyapour/>.           *
+***********************************************************************************^C
+banner incoming ^C
+***********************************************************************************
+* Inter-AS MPLS VPNs (VPLS, L3VPN), Carrier Supporting Carrier                    *
+* Copyright (C) 2019  Navid Yahyapour (NMAXi)                                     *
+* This configuration file is free: you can redistribute it and/or modify it.      *
+* This config file is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; Without even the implied warranty of MERCHANTABILITY or FITNESS   *
+* FOR A PARTICULAR PURPOSE. (The same as GNU General Public License!)             * 
+* My LinkedIn profile:  <https://www.linkedin.com/in/navid-yahyapour/>.           *
+***********************************************************************************^C
+banner login ^C
+***********************************************************************************
+* Inter-AS MPLS VPNs (VPLS, L3VPN), Carrier Supporting Carrier                    *
+* Copyright (C) 2019  Navid Yahyapour (NMAXi)                                     *
+* This configuration file is free: you can redistribute it and/or modify it.      *
+* This config file is distributed in the hope that it will be useful, but WITHOUT *
+* ANY WARRANTY; Without even the implied warranty of MERCHANTABILITY or FITNESS   *
+* FOR A PARTICULAR PURPOSE. (The same as GNU General Public License!)             * 
+* My LinkedIn profile:  <https://www.linkedin.com/in/navid-yahyapour/>.           *
+***********************************************************************************^C
+!
+!
+!
+!
+!
+end
